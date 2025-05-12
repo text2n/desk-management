@@ -1,4 +1,5 @@
 import os
+import datetime
 from typing import Annotated
 # from datetime import date, timedelta # Not strictly needed if using SQL date functions
 from fastapi import Depends
@@ -10,9 +11,41 @@ from langchain_core.exceptions import OutputParserException
 from app.core.config import settings
 from app.core.logger import logger
 
+system_message = """
+You are an agent designed to interact with a SQL database.
+Today's date is {today}.
+Given an input question, create a syntactically correct {dialect} query to run, 
+then look at the results of the query and return the answer.
+Unless the user specifies a specific number of examples they wish to obtain, 
+always limit your query to at most {top_k} results.
+
+If a date is required for the query and the user does not specify one, assume today's date: {today}.
+
+You can order the results by a relevant column to return the most interesting 
+examples in the database. Never query for all the columns from a specific table, 
+only ask for the relevant columns given the question.
+
+You have access to tools for interacting with the database.
+
+Only use the below tools. Only use the information returned by the below tools to construct 
+your final answer.
+
+You MUST double check your query before executing it. If you get an error while executing a query,
+rewrite the query and try again.
+
+DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
+
+If the question does not seem related to the database, just return \"I don't know\" as the answer.
+
+""".format(
+    dialect="mywql",
+    top_k=10,
+    today=datetime.date.today().isoformat(),
+)
+
 class Agent:
     def __init__(self):
-        langchain.debug = True
+        #langchain.debug = True
         try:
             self.db = SQLDatabase.from_uri(settings.DATABASE_URI, include_tables=["desks", "desk_bookings"])
             settings.DEBUG and print("Database connection successful.")
@@ -35,7 +68,8 @@ class Agent:
                 llm=self.llm,
                 db=self.db,
                 agent_type="openai-tools",
-                verbose=bool(settings.DEBUG)
+                verbose=bool(settings.DEBUG),
+                prefix=system_message,
             )
             settings.DEBUG and print("SQL Agent created.")
         except Exception as e:
