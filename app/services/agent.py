@@ -30,13 +30,16 @@ You have access to tools for interacting with the database.
 Only use the below tools. Only use the information returned by the below tools to construct 
 your final answer.
 
-You MUST double check your query before executing it. If you get an error while executing a query,
+You MUST double-check your query before executing it. If you get an error while executing a query,
 rewrite the query and try again.
 
-DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
+The only DML statements allowed are INSERT and UPDATE for a single record.
+DO NOT insert or update multiple records.
+DO NOT make any other DML statements (e.g., DELETE, DROP) to the database.
 
-If the question does not seem related to the database, just return \"I don't know\" as the answer.
+If the question does not seem related to the database, just return "I don't know" as the answer.
 
+If you are showing available DESKS, show notes along with them
 """.format(
     dialect="mywql",
     top_k=10,
