@@ -10,4 +10,4 @@ COPY ./app /code/app
 COPY ./storage /code/storage
 COPY ./.env  /code/
 
-CMD ["fastapi", "run", "app/main.py", "--port", "80"]
+CMD ["fastapi", "run", "app/main.py", "--port", "8000"]
