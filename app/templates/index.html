@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Interface - Tailwind CSS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Using a common font for better aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for a more polished look - WebKit browsers */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #9ca3af; /* Tailwind gray-400 */
+            border-radius: 10px;
+            border: 2px solid #f3f4f6; /* Tailwind gray-100 for padding */
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #6b7280; /* Tailwind gray-500 */
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+            border-radius: 10px;
+        }
+        /* For Firefox */
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #9ca3af #f3f4f6;
+        }
+        /* Ensure full height for the body and html to make the chat window fill the screen correctly */
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow-x: hidden; /* Prevent horizontal scroll on the body */
+        }
+        /* Helper for the chat container height */
+        .chat-container-height {
+             height: calc(100vh - 2rem); /* Full viewport height minus some padding */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .chat-container-height {
+                 height: calc(100vh - 4rem); /* Adjust for larger screens if needed */
+            }
+        }
+        @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+            50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); }
+        }
+        .animate-bounce { animation: bounce 1s infinite; }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4 sm:p-8 selection:bg-blue-500 selection:text-white">
+
+    <div id="chatApp" class="w-full max-w-2xl lg:max-w-3xl flex flex-col bg-white/90 backdrop-blur-md shadow-2xl rounded-xl chat-container-height overflow-hidden">
+
+        <header class="bg-slate-700 text-white p-4 sm:p-5 rounded-t-xl flex items-center space-x-3 shadow-md sticky top-0 z-10">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-inner">
+                AI
+            </div>
+            <div>
+                <h1 class="text-lg sm:text-xl font-semibold tracking-tight">AI Chat Assistant</h1>
+                <p class="text-xs sm:text-sm text-blue-200 flex items-center">
+                    <span class="w-2 h-2 bg-green-400 rounded-full inline-block mr-1.5 animate-pulse"></span>
+                    Online
+                </p>
+            </div>
+        </header>
+
+        <main id="chat-messages" class="flex-1 p-4 sm:p-6 space-y-4 overflow-y-auto bg-slate-50/80">
+            <div class="flex items-end space-x-2 animate-fadeIn">
+                <div class="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow">
+                    AI
+                </div>
+                <div class="bg-blue-500 text-white p-3 rounded-lg rounded-bl-none shadow-md max-w-[70%] sm:max-w-[65%]">
+                    <p class="text-sm sm:text-base">Hello! I'm your friendly AI assistant. How can I help you today?</p>
+                    <p class="text-xs text-blue-200 mt-1.5 text-right">10:00 AM</p>
+                </div>
+            </div>
+
+             <div class="flex items-end space-x-2 animate-fadeIn" id="ai-thinking" style="display: none;">
+                <div class="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow">
+                    AI
+                </div>
+                <div class="bg-slate-200 p-3 rounded-lg rounded-bl-none shadow-md">
+                    <div class="flex space-x-1">
+                        <span class="w-2 h-2 bg-slate-500 rounded-full animate-bounce delay-0"></span>
+                        <span class="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style="animation-delay: 0.1s;"></span>
+                        <span class="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style="animation-delay: 0.2s;"></span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <footer class="bg-slate-100/90 p-3 sm:p-4 border-t border-slate-200 rounded-b-xl sticky bottom-0 z-10">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <input type="text" id="message-input" placeholder="Type your message here..." class="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition duration-150 ease-in-out text-sm sm:text-base shadow-sm placeholder-slate-400">
+                <button id="send-button" class="bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-5 sm:px-6 rounded-lg transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-100 shadow-md active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path d="M3.105 3.105a1.5 1.5 0 012.122-.001L19.43 14.695a1.5 1.5 0 01-.001 2.122L14.696 19.43a1.5 1.5 0 01-2.122.001L-.001 5.227a1.5 1.5 0 01.001-2.122L3.105 3.105z" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-xs text-slate-400 text-center mt-2">Press Enter to send. Powered by AI.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const chatMessagesContainer = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const aiThinkingIndicator = document.getElementById('ai-thinking');
+
+        // Function to scroll to the bottom of the chat messages
+        function scrollToBottom() {
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        }
+
+        // Initial scroll to bottom
+        scrollToBottom();
+
+        // Function to format current time
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Function to add a message to the chat
+        // message: string, the message content
+        // sender: 'user' or 'ai'
+        function addMessageToChat(message, sender) {
+            // Hide thinking indicator if it was visible
+            if (aiThinkingIndicator) aiThinkingIndicator.style.display = 'none';
+
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('flex', 'items-end', 'animate-fadeIn'); // Added animate-fadeIn for new messages
+
+            const avatarContainer = document.createElement('div');
+            avatarContainer.classList.add('flex-shrink-0', 'w-8', 'h-8', 'sm:w-10', 'sm:h-10', 'rounded-full', 'flex', 'items-center', 'justify-center', 'text-sm', 'font-semibold', 'shadow');
+
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('p-3', 'rounded-lg', 'shadow-md', 'max-w-[70%]', 'sm:max-w-[65%]');
+
+            const messageText = document.createElement('p');
+            messageText.classList.add('text-sm', 'sm:text-base');
+            messageText.textContent = message; // Using textContent for security
+
+            const timestamp = document.createElement('p');
+            timestamp.classList.add('text-xs', 'mt-1.5', 'text-right');
+            timestamp.textContent = getCurrentTime();
+
+            if (sender === 'user') {
+                messageWrapper.classList.add('justify-end', 'space-x-2');
+                avatarContainer.classList.add('bg-slate-300', 'text-slate-700');
+                avatarContainer.textContent = 'U';
+                messageBubble.classList.add('bg-emerald-500', 'text-white', 'rounded-br-none');
+                timestamp.classList.add('text-emerald-200');
+
+                messageBubble.appendChild(messageText);
+                messageBubble.appendChild(timestamp);
+                messageWrapper.appendChild(messageBubble); // Message bubble first for user
+                messageWrapper.appendChild(avatarContainer);
+            } else { // AI
+                messageWrapper.classList.add('space-x-2');
+                avatarContainer.classList.add('bg-gradient-to-br', 'from-blue-500', 'to-indigo-600', 'text-white');
+                avatarContainer.textContent = 'AI';
+                messageBubble.classList.add('bg-blue-500', 'text-white', 'rounded-bl-none');
+                timestamp.classList.add('text-blue-200');
+
+                messageBubble.appendChild(messageText);
+                messageBubble.appendChild(timestamp);
+                messageWrapper.appendChild(avatarContainer); // Avatar first for AI
+                messageWrapper.appendChild(messageBubble);
+            }
+
+            chatMessagesContainer.appendChild(messageWrapper);
+            scrollToBottom(); // Scroll after adding the new message
+        }
+
+        // Function to handle sending a message
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessageToChat(message, 'user');
+                messageInput.value = ''; // Clear the input field
+
+                // Show AI thinking indicator
+                if (aiThinkingIndicator) aiThinkingIndicator.style.display = 'flex';
+                scrollToBottom(); // Scroll to show thinking indicator if chat is long
+
+
+                fetch("/api/question", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ question: message }),
+                }).then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                }).then((data) => {
+                    addMessageToChat(data.answer, 'ai');
+                })
+            }
+        }
+
+        // Event listener for the send button
+        sendButton.addEventListener('click', sendMessage);
+
+        // Event listener for pressing Enter in the input field
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { // Send on Enter, allow Shift+Enter for newline (though input is single-line here)
+                e.preventDefault(); // Prevent default Enter behavior (like form submission)
+                sendMessage();
+            }
+        });
+
+        // Focus the input field on load
+        messageInput.focus();
+
+    </script>
+</body>
+</html>
